@@ -1,2 +1,9 @@
-com\locadora\model\Cliente.class
+com\locadora\model\CategoriaVeiculo.class
 com\locadora\LocadoraApiApplication.class
+com\locadora\model\Cliente.class
+com\locadora\model\Locacao$Status.class
+com\locadora\model\Locacao.class
+com\locadora\model\Veiculo$Status.class
+com\locadora\model\Manutencao$Status.class
+com\locadora\model\Veiculo.class
+com\locadora\model\Manutencao.class
