@@ -1,22 +1,25 @@
 package com.locadora.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.CollectionType;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-// Classe abstrata genérica, que serve como base para repositórios que salvam dados em arquivos JSON
 public abstract class JsonRepositoryBase<T> {
-    
-    //Faz toda a conversão entre JSON e objetos Java
-    protected final ObjectMapper mapper = new ObjectMapper();
+
+    // ObjectMapper configurado corretamente para LocalDate e LocalDateTime
+    protected final ObjectMapper mapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
     private final Class<T> clazz;
     private final String filePath;
 
-    // Construtor 
     protected JsonRepositoryBase(Class<T> clazz, String fileName) {
         this.clazz = clazz;
         String resourcesPath = "src/main/resources/data/" + fileName;
@@ -24,24 +27,20 @@ public abstract class JsonRepositoryBase<T> {
         this.filePath = f.exists() ? resourcesPath : "./data/" + fileName;
     }
 
-    /*
-        - Lê uma lista do JSON
-        - Impede que dois threads acessem o arquivo ao mesmo tempo.
-    */ 
     protected synchronized List<T> readAll() {
         try {
             File file = new File(filePath);
             if (!file.exists()) return new ArrayList<>();
-            CollectionType listType = mapper.getTypeFactory().constructCollectionType(List.class, clazz);
+
+            CollectionType listType =
+                    mapper.getTypeFactory().constructCollectionType(List.class, clazz);
+
             return mapper.readValue(file, listType);
         } catch (Exception e) {
             throw new RuntimeException("Erro ao ler " + filePath + ": " + e.getMessage(), e);
         }
     }
-    
-    /*
-        - Grava a lista no JSON
-    */
+
     protected synchronized void writeAll(List<T> list) {
         try {
             File file = new File(filePath);
